@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include "tools.h"
 
 int main(int argc, char **argv) {
     printf("Hello World!");
@@ -63,7 +65,7 @@ int Ntypes=0;
 //types indexed as in xyz
 char**  types;
 //contains amout, radius, charge. To pe parsed to separate matrixes
-char** typeinfo;
+char*** typeinfo;
 //charge per lenght of polymer
 double tau;
 double rpol;
@@ -200,7 +202,7 @@ for(int i=0; i<gro_ntypes;i++)
 {
   //hanne, fix the numer of stars in typeinfo
   printf("type: %s number: %s charge: %s radius: %s \n", gro_typeinfo[i][0],gro_typeinfo[i][1],gro_typeinfo[i][2], gro_typeinfo[i][3]);
-  chargesum=chargesum+strtol(gro_typeinfo[i][1], dummyptr,10)*strtol(gro_typeinfo[i][2],dummyptr,10);
+  chargesum=chargesum+strtol(gro_typeinfo[i][1], &dummyptr,10)*strtol(gro_typeinfo[i][2],&dummyptr,10);
 }
 
 printf("Total charge of the system %d \n",chargesum);
@@ -211,7 +213,7 @@ printf("Total charge of the system %d \n",chargesum);
 else
 {
 //generate configuration
-gen_poreconf(polcoord, box, Qs,rs,xyz, types, Ntypes);
+gen_poreconf(polcoord,rpol,rpore, box, Qs,rs,xyz,types, typeinfo, Ntypes);
 
 }
 
