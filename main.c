@@ -24,6 +24,8 @@ int temp;
 char* file_in;
 char* file_out_base;
 char* file_gro;
+char file_out_gro[40];
+char file_out_energ[40];
 //indexes and indicators for input
 
 int is_g=0;
@@ -145,6 +147,11 @@ if(is_g==1)
 {
 	file_gro=argv[ndx_g+1];
 }
+strcpy(file_out_gro, file_out_base);
+strcat(file_out_gro,".gro");
+strcpy(file_out_energ, file_out_base);
+strcat(file_out_energ,".enrg");
+
 //------------------------------------------------------------------------------------------
 
 //               Reading information from files, memory allocation for dynamic and system dependent matrixes
@@ -156,16 +163,13 @@ if(is_g==1)
 	
 	
 
-temp=read_input(file_in,file_out_base,&relax,&nstep, &step_upd, &gro_outp, &var_outp, &stepsize, &alpha, &rcut, kcut,Ntot, &typeinfo,&Ntypes,rpore,tau, box);
-
+temp=read_input(file_in,file_out_base,&relax,&nstep, &step_upd, &gro_outp, &var_outp, &stepsize, &alpha, &rcut, kcut,&Ntot, &typeinfo,&Ntypes,&rpore,&tau, box);
 
 if(temp==0)
 {
 	printf("Cannot read input file\n");
 	exit(0);
 }
-
-
 
 
 xyz=malloc(sizeof(double*)*Ntot);
@@ -189,7 +193,7 @@ int gro_ntypes=0;
 int chargesum=0;
 char* dummyptr;
 
-read_gro(file_gro, xyz, gro_typeinfo, &gro_ntot,&gro_ntypes, box);
+//read_gro(file_gro, xyz, gro_typeinfo, &gro_ntot,&gro_ntypes, box);
 
 	if(gro_ntypes!=Ntypes)
 	{
@@ -216,6 +220,6 @@ else
 gen_poreconf(polcoord,rpol,rpore, box, Qs,rs,xyz,types, typeinfo, Ntypes);
 
 }
-
+write_gro(file_out_gro,0, xyz, Ntot, polcoord, box, types, typeinfo);
 return 0;
 }
