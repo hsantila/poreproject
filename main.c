@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "tools.h"
-
+#include "io.h"
 int main(int argc, char **argv) {
     printf("Hello World!");
-    
+
     //step parameters
 int nstep=0;	//number of steps
 double stepsize=0; 
@@ -163,8 +163,8 @@ strcat(file_out_energ,".enrg");
 	
 	
 
-temp=read_input(file_in,file_out_base,&relax,&nstep, &step_upd, &gro_outp, &var_outp, &stepsize, &alpha, &rcut, kcut,&Ntot, &typeinfo,&Ntypes,&rpore,&tau, box);
-
+temp=read_input(file_in,file_out_base,&relax,&nstep, &step_upd, &gro_outp, &var_outp, &stepsize, &alpha, &rcut, kcut, &typeinfo,&Ntypes,&Ntot,&rpore,&rpol,&tau, box);
+ printf("%s %s %s %s %s\n", typeinfo[0][0],typeinfo[0][1], typeinfo[0][2],typeinfo[0][3],typeinfo[0][4]);
 if(temp==0)
 {
 	printf("Cannot read input file\n");
@@ -216,6 +216,7 @@ printf("Total charge of the system %d \n",chargesum);
 }
 else
 {
+  
 //generate configuration
 gen_poreconf(polcoord,rpol,rpore, box, Qs,rs,xyz,types, typeinfo, Ntypes);
 
