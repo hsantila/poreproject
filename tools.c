@@ -18,10 +18,10 @@ char* dummyptr;
 int temp_N=0;
 int indx=0;
 int accept=0;
-int r=0;
-int x;
-int y;
-int z;
+double r=0;
+double x;
+double y;
+double z;
 int res=100;
 int Nnonpore=0;
 int tmp=0;
@@ -31,34 +31,34 @@ for(int i=0; i<Ntypes;i++)
   //only static particles are generated first
   if(strcmp(typeinfo[i][4],"no")==0)
   {
-      
+      printf("%s %d",typeinfo[i][0], strcmp(typeinfo[i][4],"yes"));
       temp_N=strtol(typeinfo[i][1],&dummyptr,10);
       for (int j=0;j<temp_N;j++)
       {
-	types[indx+j]=typeinfo[i][0];
-	Qs[indx+j]=strtol(typeinfo[i][2], &dummyptr,10);
-	rs[indx+j]=strtol(typeinfo[i][3], &dummyptr,10);
+	types[indx]=typeinfo[i][0];
+	Qs[indx]=strtol(typeinfo[i][2], &dummyptr,10);
+	rs[indx]=strtol(typeinfo[i][3], &dummyptr,10);
 	
 	while(accept==0)
 	{
-	  x=rand()/(double)(RAND_MAX)*rpore;
-	  y=rand()/(double)(RAND_MAX)*rpore;
+	 x=polcoord[0]+2.0*rand()/(double)(RAND_MAX)*rpore-rpore;
+	  y=polcoord[1]+2.0*rand()/(double)(RAND_MAX)*rpore-rpore;
 	  z=(rand()/(double)RAND_MAX*box[2]);
 	  
-	  if(overlap_pol(polcoord, x, y, rpol, rs[indx+j], box))
+	  if(overlap_pol(polcoord, x, y, rpol, rs[indx], box))
 	    continue;
 	  if(outside_pore(polcoord, rpore, x, y))
 	    continue;
-	  if(overlap_ion(j, xyz, j, rs, x, y, z,box))
+	  if(overlap_ion(indx, xyz,indx, rs, x, y, z,box))
 	    continue;
 	  accept=1;
 	  
 	}
 	accept=0;
-	xyz[indx+j][0]=x;
-	xyz[indx+j][2]=z;
-	xyz[indx+j][1]=y;
-	indx=indx+j;
+	xyz[indx][0]=x;
+	xyz[indx][2]=z;
+	xyz[indx][1]=y;
+	indx=indx+1;
       }	
       
     
@@ -79,11 +79,14 @@ for(int i=0; i<Ntypes;i++)
 
 
 	xyz[indx+j][0]=polcoord[0];
-	xyz[indx+j][2]=z/temp_N*(j);
+	xyz[indx+j][2]=box[2]/temp_N*(j);
 	xyz[indx+j][1]=polcoord[1];
+      	types[indx+j]=typeinfo[i][0];
+	Qs[indx+j]=0;
+	rs[indx+j]=rpol;
 	
       }	
-      
+
     indx=indx+temp_N;
   } 
   
@@ -96,12 +99,12 @@ for(int i=0; i<Ntypes;i++)
 {  
     //generates the pore by randomly distributing points based on artificial radius (scaled by 0.5) per point
  
-  int theta=0;
+  double theta=0;
   
     temp_N=strtol(typeinfo[i][1],&dummyptr,10);
     double Aperpoint=2*PI*rpore*box[2]/temp_N;
-    double dummyr=sqrt(Aperpoint/(PI))*0.5;
-    
+    double dummyr=sqrt(Aperpoint/(PI))*0.9;
+    int reject=0;
    
     if(strcmp(typeinfo[i][0],"H")==0)
   {
@@ -110,25 +113,32 @@ for(int i=0; i<Ntypes;i++)
     {
       while (accept==0)
       {
-       theta = 2*PI*rand()/(double)RAND_MAX;
+       theta = 2.0*PI*rand()/(double)RAND_MAX;
        z = rand()*box[2]/(double)RAND_MAX;
-        //generates the pore by randomly distributing points based on artificial radius (scaled by 0.5) per point x=rpore*cos(theta);
-       y=rpore*sin(theta);
+        //generates the pore by randomly distributing points based on artificial radius (scaled by 0.25) per point x=rpore*cos(theta);
+       y=polcoord[1]+rpore*sin(theta);
+       x=polcoord[0]+rpore*cos(theta);
        for(int k=Nnonpore; k<Nnonpore+j;k++)
        { 
 	 if(SQR(xyz[k][0]-x)+SQR(xyz[k][1]-y)+SQR(xyz[k][2]-z)<SQR(dummyr))
+	 {
+	   reject=reject+1;
 	   tmp=1;
 	    break;
-	 
+	 }
        }
        if (tmp==0)
        {
 	 xyz[indx+j][0]=x;
 	 xyz[indx+j][1]=y;
 	 xyz[indx+j][2]=z;
-	 
+	 types[indx+j]=typeinfo[i][0];
+	 Qs[indx+j]=strtol(typeinfo[i][2], &dummyptr,10);
+	rs[indx+j]=strtol(typeinfo[i][3], &dummyptr,10);
 	 accept=1;
+	 
        }
+       tmp=0;
       }
       accept=0;
     }
