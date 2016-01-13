@@ -1,0 +1,60 @@
+# BOX_X
+BOXX 20.000000
+
+# BOX_Y
+BOXY 20.000000
+
+# BOX_Z
+BOXZ 20.000000
+
+# line charge density
+taupol 1.0
+
+# Polymer  radius
+r_pol 1.100000
+
+# Poreradius
+r_pore 3.300000
+
+# MC steps
+MCsteps 3000000
+
+# GRO printout interval 
+groprintoutinterval 500
+
+# Data printout interval 
+dataprintoutinterval 1000
+
+# Step update interval 
+stepupdateinterval 300000
+
+# Initial steps to be disregarded 
+RELAXATIONSTEPS 0
+
+# stepsize
+stepsize 0.700000
+
+# K vectos in x
+EwaldKx 9
+
+# K vectos in y
+EwaldKy 9
+
+# K vectos in z
+EwaldKz 9
+
+# Direct space cutoff
+Rcut 10.000000
+
+# Ewald summation alpha
+Ealpha 0.370000
+
+#TYPES amount charge	radius static?
+P	100	NA	NA	yes
+H	300	0	0	yes	
+A1	15	-1	0.3	no	
+A2	10	-2	0.3	no	
+C1	15	1	0.3	no
+C2	10	2	0.3	no
+
+
