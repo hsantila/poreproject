@@ -5,7 +5,7 @@
 #include "mymath.h"
 #include "tools.h"
 //#include "mymath.h"
-//#include "ewald_line.h"
+#include "Ewald_pore.h"
 //#include "io.h"
 
 
@@ -28,7 +28,7 @@ int tmp=0;
 
 for(int i=0; i<Ntypes;i++)
 {
-  //only static particles are generated first
+  //mobile particles first, polymer last, because needs to loop over charged and polymer charge is defined as a line
   if(strcmp(typeinfo[i][4],"no")==0)
   {
       printf("%s %d",typeinfo[i][0], strcmp(typeinfo[i][4],"yes"));
@@ -67,31 +67,7 @@ for(int i=0; i<Ntypes;i++)
   
 }
 
-for(int i=0; i<Ntypes;i++)
-{
-  //polymer beads
-  if(strcmp(typeinfo[i][0],"P")==0)
-  {
-      
-      temp_N=strtol(typeinfo[i][1],&dummyptr,10);
-      for (int j=0;j<temp_N;j++)
-      {
 
-
-	xyz[indx+j][0]=polcoord[0];
-	xyz[indx+j][2]=box[2]/temp_N*(j);
-	xyz[indx+j][1]=polcoord[1];
-      	types[indx+j]=typeinfo[i][0];
-	Qs[indx+j]=0;
-	rs[indx+j]=rpol;
-	
-      }	
-
-    indx=indx+temp_N;
-  } 
-  
-  
-} 
 Nnonpore=indx;
 accept=0;
 
@@ -147,6 +123,32 @@ for(int i=0; i<Ntypes;i++)
   } 
   
 }
+
+for(int i=0; i<Ntypes;i++)
+{
+  //polymer beads
+  if(strcmp(typeinfo[i][0],"P")==0)
+  {
+      
+      temp_N=strtol(typeinfo[i][1],&dummyptr,10);
+      for (int j=0;j<temp_N;j++)
+      {
+
+
+	xyz[indx+j][0]=polcoord[0];
+	xyz[indx+j][2]=box[2]/temp_N*(j);
+	xyz[indx+j][1]=polcoord[1];
+      	types[indx+j]=typeinfo[i][0];
+	Qs[indx+j]=0;
+	rs[indx+j]=rpol;
+	
+      }	
+
+    indx=indx+temp_N;
+  } 
+  
+  
+} 
 } 
 
 //---------------------------------------------------------------------------------------------------------------
@@ -210,4 +212,19 @@ if((dx*dx+dy*dy)<rpore*rpore)
   return 0;
 else
    return 1;
+}
+//--------------------------------------------------------------------------------------------------------------------------
+double calc_energy(double** xyz, double* Qs)
+{
+// calc ewald energy+other neccesary energies
+double er=0;
+double ek=0;
+double ed=0;
+er=Ewald_r_space_line(xyz, Qs,0,0,0);
+ek=Ewald_k_space_line(xyz, Qs,0,0,0);
+//ed=Ewald_dipol(xyz,Qs,0,0,0);
+//dipole off;
+ed=0;
+//printf("total energy er %lf ek %lf ed %lf\n",er,ek,ed);
+return er+ek+ed;
 }
