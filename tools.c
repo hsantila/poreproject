@@ -123,8 +123,8 @@ for(int i=0; i<Ntypes;i++)
       for (int j=0;j<temp_N;j++)
       {
 	strcpy(types[indx],typeinfo[i][0]);
-	Qs[indx]=strtol(typeinfo[i][2], &dummyptr,10);
-	rs[indx]=strtol(typeinfo[i][3], &dummyptr,10);
+	Qs[indx]=strtod(typeinfo[i][2], &dummyptr);
+	rs[indx]=strtod(typeinfo[i][3], &dummyptr);
 	
 	while(accept==0)
 	{
@@ -220,8 +220,8 @@ for(int i=0; i<Ntypes;i++)
 	 xyz[indx+j][1]=y;
 	 xyz[indx+j][2]=z;
 	 strcpy(types[indx+j],typeinfo[i][0]);
-	 Qs[indx+j]=strtol(typeinfo[i][2], &dummyptr,10);
-	rs[indx+j]=strtol(typeinfo[i][3], &dummyptr,10);
+	 Qs[indx+j]=strtod(typeinfo[i][2], &dummyptr);
+	rs[indx+j]=strtod(typeinfo[i][3], &dummyptr);
 	 accept=1;
 	 
        }

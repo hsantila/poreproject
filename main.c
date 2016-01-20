@@ -458,6 +458,11 @@ move_ndx=Nions-1;
 
 //------------------------------------------------------------------------
 
+for (int i=0;i<Ntot;i++)
+{
+	printf("%s %d %lf %lf %lf %lf %lf\n",types[i], i, xyz[i][0],xyz[i][1],xyz[i][2], Qs[i], rs[i]);	
+
+}
 //initiate ewald
 Ewald_init_line(box, Nions,1, alpha,rcut, kcut, 1, 1, tau, polcoord);
 

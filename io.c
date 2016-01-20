@@ -325,8 +325,8 @@ fscanf(gro,"%d\n",&Natoms);
 		    else
 		    {
 		      
-			Qs[i]=strtol(typeinfo[j][2], &dummyptr,10);
-			rs[i]=strtol(typeinfo[j][3], &dummyptr,10);
+			Qs[i]=strtod(typeinfo[j][2], &dummyptr);
+			rs[i]=strtod(typeinfo[j][3], &dummyptr);
 			strcpy(types[i], typeinfo[j][0]);
 		    }
 		    
