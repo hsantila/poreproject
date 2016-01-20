@@ -266,7 +266,97 @@ else
 
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------
   
-  
+int write_energy(char* file,int step, double* energy)
+{
+FILE *ene;
+if ((ene = fopen(file,"a")) != NULL)
+{
+	fprintf(ene,"%d %lf\n", step, *energy);
+fclose(ene);
+return 1;
+}
+else
+	printf("Cannot open the energy file for writing, The reason *may* be %s\n", strerror(errno));
+	return 0;
+}  
+
+//---------------------------------------------------------------------------------------------------------------------------------
 
 
+int read_gro(char* file_gro,double** xyz,double* polcoord,double* Qs,double* rs, char*** typeinfo,int ntypes,char** types, int* gro_ntot,double* box)
+{
+ int maxlen=100;
+char line[maxlen];
+FILE *gro;
+int Natoms=0;
+int resnumber=0;
+char resname[5];
+int atomnumber=0;
+char atomname[5];
+int tmp=0;
+int k=0;
+char* dummyptr;
+
+if ((gro = fopen(file_gro,"r")) != NULL)
+{
+fgets(line, maxlen, gro);
+fscanf(gro,"%d\n",&Natoms);
+	
+	for (int i=0;i<Natoms;i++)
+	{
+		fscanf(gro, "%5d%5s %5s %5d %lf %lf %lf\n",&resnumber,resname, atomname,&atomnumber,&xyz[k][0],&xyz[k][1],&xyz[k][2]);
+		
+		
+		for (int j=0;j<ntypes;j++)
+		{
+		  if(strstr(typeinfo[j][0],atomname)!=NULL)
+		  {
+		    if (strstr(resname, "P")!=NULL)
+		    {
+			  polcoord[0]=xyz[k][0];
+			  polcoord[1]=xyz[k][1];
+			  Qs[i]=0;
+			  rs[i]=0;
+			  strcpy(types[i], typeinfo[j][0]);
+		      
+		    }
+		    else
+		    {
+		      
+			Qs[i]=strtol(typeinfo[j][2], &dummyptr,10);
+			rs[i]=strtol(typeinfo[j][3], &dummyptr,10);
+			strcpy(types[i], typeinfo[j][0]);
+		    }
+		    
+		    
+		  }
+		  else
+		  {
+		    printf("Cannot find matching type info for %s\n", atomname);
+		    return 0;
+		    
+		  }
+		  
+		  
+		}
+		
+
+	}
+
+fscanf(gro, "%lf %lf %lf", &box[0],&box[1],&box[2]);
+printf("Read %d particles, of %d types\n");
+*gro_ntot=Natoms;
+fclose(gro);
+return 1;
+}
+else
+{
+	printf("Cannot read from gro file, The reason *may* be %s\n", strerror(errno));
+	return 0;
+}
+}
+ 
+  
+  

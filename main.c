@@ -5,7 +5,7 @@
 #include "io.h"
 #include "Ewald_pore.h"
 int main(int argc, char **argv) {
-    printf("Hello World!");
+  
 
     //step parameters
 int nstep=0;	//number of steps
@@ -115,7 +115,10 @@ for (int i=1; i<argc; i++){
     }
     if (strcmp(argv[i],"-r")==0){
 	seed =(int)strtod(argv[i+1], NULL); // optional seed for random number generator
-    }		
+    }
+    if (strcmp(argv[i],"-s")==0){
+	nstep =(int)strtod(argv[i+1], NULL); // If parameter file contains steps, this is overwritten
+    }
     if (strcmp(argv[i],"-t")==0){
 	is_t=1;
 	start_t =(int)strtod(argv[i+1], NULL); // If gro file given
@@ -169,13 +172,13 @@ strcat(file_out_energ,".enrg");
 	
 
 temp=read_input(file_in,file_out_base,&relax,&nstep, &step_upd, &gro_outp, &var_outp, &stepsize, &alpha, &rcut, kcut, &typeinfo,&Ntypes,&Ntot,&rpore,&rpol,&tau, box);
- printf("%s %s %s %s %s\n", typeinfo[0][0],typeinfo[0][1], typeinfo[0][2],typeinfo[0][3],typeinfo[0][4]);
+
 if(temp==0)
 {
 	printf("Cannot read input file\n");
 	exit(0);
 }
-
+printf("Ntot %d", Ntot);
 
 xyz=malloc(sizeof(double*)*Ntot);
 	for (int i=0; i<Ntot;i++)
@@ -191,31 +194,33 @@ types=malloc(sizeof(char*)*Ntot);
 if (is_g==1)
 {
 //read in configuration, these are temporary variables for comparison between gro and input file
+//could use better failsafes
 
-char*** gro_typeinfo;
 int gro_ntot=0;
-int gro_ntypes=0;
-int chargesum=0;
+int ret_gro=0;
 
+ret_gro=read_gro(file_gro,xyz,polcoord,Qs,rs, typeinfo,Ntypes,types, &gro_ntot,box);
 
-//read_gro(file_gro, xyz, gro_typeinfo, &gro_ntot,&gro_ntypes, box);
-
-	if(gro_ntypes!=Ntypes)
+if(ret_gro==0)
+{
+  
+  printf("Failure in gro read-in\n");
+  exit(0);
+  
+}
+	if(gro_ntot!=Ntot)
 	{
-	printf("Missmatch in amount of particle types read");
+	printf("Missmatch in amount of particles");
 	exit(0);
 	}
 	
 printf("Read in configuration\n");
-for(int i=0; i<gro_ntypes;i++)
+
+for (int i=0;i<Nions;i++)
 {
-  //hanne, fix the numer of stars in typeinfo
-  printf("type: %s number: %s charge: %s radius: %s \n", gro_typeinfo[i][0],gro_typeinfo[i][1],gro_typeinfo[i][2], gro_typeinfo[i][3]);
-  chargesum=chargesum+strtol(gro_typeinfo[i][1], &dummyptr,10)*strtol(gro_typeinfo[i][2],&dummyptr,10);
+	printf("%s %d %lf %lf %lf %lf %lf\n",types[i], i, xyz[i][0],xyz[i][1],xyz[i][2], Qs[i], rs[i]);	
+
 }
-
-printf("Total charge of the system %d \n",chargesum);
-
 
 
 }
@@ -469,7 +474,8 @@ srand(seed);
 for (int i=start_t; i<=nstep;i++)
 {
 	//step function needs to be updated
-	acc=MCstep(xyz,Qs,Nions,Ncat, stepsize,Npol, box, polcoord, rion, rpol,ioncoord, &energy);
+	acc=step(xyz,Qs,Nions, stepsize,box, polcoord, rs, rpol,rpore, &energy);
+
 	acc_sum=acc_sum+acc;
 	etot=etot+energy;
 		
@@ -499,7 +505,7 @@ for (int i=start_t; i<=nstep;i++)
 		//update stepsize
 		if((1.0*acc_sum/step_upd)>0.75)
 		{
-			stepsize=stepsize*10.0;
+			stepsize=stepsize*2.0;
 			if (stepsize>box[0] && stepsize>box[1] && stepsize>box[2])
 			{
 				printf("Attempt to increase step size over box size on timestep %d\n",i);
@@ -512,7 +518,7 @@ for (int i=start_t; i<=nstep;i++)
 		if((1.0*acc_sum/step_upd)<0.25)
 		{
 						
-			stepsize=stepsize/10.0;
+			stepsize=stepsize/2.0;
 			if(stepsize<0.1)
 			{
 				printf("Attempt to decrease steps size under limit 0.1 on timestep %d\n",i);
@@ -529,7 +535,8 @@ for (int i=start_t; i<=nstep;i++)
 	if (i%gro_outp==0)
 	{
 	//basic printouts, energy, gro
-		temp=write_gro(file_out_gro,i, xyz, Nions, Npol, polcoord, box, Qs);
+		temp=write_gro(file_out_gro,i, xyz, Ntot, polcoord, box, types, typeinfo);
+		
 		if (temp==0)
 			exit(0);
 		printf("step %d acc_sum %d energy %f\n", i, acc_sum, etot);
@@ -540,6 +547,45 @@ for (int i=start_t; i<=nstep;i++)
 
 }
 
+//--------------------------------------------------------------------------------
+
+//				Memory handling
+
+//--------------------------------------------------------------------------------
+
+
+
+for (int i=0; i<Ntot;i++)
+	free(xyz[i]);
+free(xyz);
+
+
+free(Qs);
+free(rs);
+
+
+for (int i=0;i<Ntypes;i++)
+{
+	for(int j=0;j<5;j++)
+	{
+		free(typeinfo[i][j]);
+	
+	}
+free(typeinfo[i]);	
+}
+free(typeinfo);
+
+
+printf("Ntot %d", Ntot);
+
+
+
+for (int i=0;i<Ntot;i++)
+{
+ 
+   free(types[i]);
+}
+free(types);
 
 
 return 0;
